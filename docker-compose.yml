@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  youth-hockey-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        - NODE_ENV=production
+        - PUBLIC_SUPABASE_URL=${PUBLIC_SUPABASE_URL}
+        - PUBLIC_SUPABASE_SERVICE_ROLE=${PUBLIC_SUPABASE_SERVICE_ROLE}
+    container_name: youth-hockey-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PUBLIC_SUPABASE_URL=${PUBLIC_SUPABASE_URL}
+      - PUBLIC_SUPABASE_SERVICE_ROLE=${PUBLIC_SUPABASE_SERVICE_ROLE}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development service
+  youth-hockey-api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: youth-hockey-api-dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - PUBLIC_SUPABASE_URL=${PUBLIC_SUPABASE_URL}
+      - PUBLIC_SUPABASE_SERVICE_ROLE=${PUBLIC_SUPABASE_SERVICE_ROLE}
+    env_file:
+      - .env
+    command: yarn start:dev
+    profiles:
+      - dev
